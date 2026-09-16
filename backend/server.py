@@ -25,8 +25,8 @@ def get_timeline(case_path: str):
         return {"error": "Database not found"}
     
     conn = duckdb.connect(db_path)
-    # Get last 100 timeline events for UI
-    results = conn.execute("SELECT * FROM timeline ORDER BY timestamp DESC LIMIT 100").fetchall()
+    # Get last 1000 timeline events for UI
+    results = conn.execute("SELECT * FROM timeline ORDER BY timestamp DESC LIMIT 1000").fetchall()
     columns = [desc[0] for desc in conn.description]
     conn.close()
     
@@ -53,6 +53,23 @@ def get_findings(case_path: str):
         
     conn = duckdb.connect(db_path)
     results = conn.execute("SELECT * FROM findings ORDER BY created_at DESC").fetchall()
+    columns = [desc[0] for desc in conn.description]
+    conn.close()
+    
+    return [dict(zip(columns, row)) for row in results]
+
+@app.get("/api/flags")
+def get_flags(case_path: str):
+    db_path = os.path.join(case_path, "database", "case.duckdb")
+    if not os.path.exists(db_path):
+        return {"error": "Database not found"}
+        
+    conn = duckdb.connect(db_path)
+    tables = [r[0] for r in conn.execute("SHOW TABLES").fetchall()]
+    if 'anomaly_flags' not in tables:
+        return []
+        
+    results = conn.execute("SELECT * FROM anomaly_flags ORDER BY created_at DESC").fetchall()
     columns = [desc[0] for desc in conn.description]
     conn.close()
     

@@ -28,5 +28,14 @@ def init_db(db_path: Path):
         hypothesis_id UUID,
         created_at TIMESTAMP DEFAULT current_timestamp
     );
+    
+    CREATE TABLE IF NOT EXISTS anomaly_flags (
+        id UUID PRIMARY KEY DEFAULT uuid(),
+        rule_name VARCHAR,
+        description TEXT,
+        evidence_refs JSON,
+        severity VARCHAR,
+        created_at TIMESTAMP DEFAULT current_timestamp
+    );
     """)
     conn.close()
